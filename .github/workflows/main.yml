@@ -1,0 +1,24 @@
+name: Docker Image Downloader
+
+on:
+  workflow_dispatch: # 允许你手动点击运行
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull Docker Image
+        run: |
+          # 拉取你需要的镜像
+          docker pull nvcr.io/nvidia/pytorch:23.08-py3
+          
+      - name: Save Docker Image to Tar
+        run: |
+          # 将镜像保存为 tar 文件并压缩
+          docker save nvcr.io/nvidia/pytorch:23.08-py3 | gzip > pytorch_23_08.tar.gz
+          
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-pytorch-image
+          path: pytorch_23_08.tar.gz
