@@ -1,23 +1,32 @@
-name: Docker Image Downloader
+name: Docker Image Downloader (Stable Link)
 
 on:
-  workflow_dispatch: # 允许你手动点击运行
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Maximize Disk Space
+        run: |
+          # 释放 GitHub 服务器磁盘空间，确保能放下 5GB+ 的镜像
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+
       - name: Pull Docker Image
         run: |
-          # 拉取你需要的镜像
+          # 拉取适配你 3090 驱动 (535) 的 CUDA 12.2 镜像
           docker pull nvcr.io/nvidia/pytorch:23.08-py3
-
-      - name: Save Docker Image to Tar
+          
+      - name: Save and Compress Image
         run: |
-          # 压缩镜像以减小体积
+          # 打包并使用 gzip 压缩
           docker save nvcr.io/nvidia/pytorch:23.08-py3 | gzip > pytorch_23_08.tar.gz
           
-      - name: Upload to Transfer.sh
+      - name: Generate Public Download Link
         run: |
-          # 将文件上传到匿名传输站，并打印下载链接
+          # 将压缩包上传到 Transfer.sh 
+          # 这个链接支持断点续传，且国内下载相对稳定
+          echo "Your download link is:"
           curl --upload-file ./pytorch_23_08.tar.gz https://transfer.sh/pytorch_23_08.tar.gz
