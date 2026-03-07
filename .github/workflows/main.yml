@@ -18,15 +18,16 @@ jobs:
         run: |
           # 拉取适配你 3090 驱动 (535) 的 CUDA 12.2 镜像
           docker pull nvcr.io/nvidia/pytorch:23.08-py3
-          
+
       - name: Save and Compress Image
         run: |
-          # 打包并使用 gzip 压缩
+          # 压缩镜像以减小体积
           docker save nvcr.io/nvidia/pytorch:23.08-py3 | gzip > pytorch_23_08.tar.gz
           
-      - name: Generate Public Download Link
+      - name: Upload to WeTransfer
         run: |
-          # 将压缩包上传到 Transfer.sh 
-          # 这个链接支持断点续传，且国内下载相对稳定
-          echo "Your download link is:"
-          curl --upload-file ./pytorch_23_08.tar.gz https://transfer.sh/pytorch_23_08.tar.gz
+          # 使用现成的 Action 工具上传到 WeTransfer
+          # 它会直接在日志中输出一个永久下载链接
+          curl -fsSL https://raw.githubusercontent.com/Mikubill/transfer/master/install.sh | sh
+          ./transfer wet pytorch_23_08.tar.gz
+     
